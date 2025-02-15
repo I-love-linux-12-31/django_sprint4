@@ -1,7 +1,8 @@
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import HttpResponseForbidden, HttpResponseNotFound, HttpResponseRedirect
 from django.shortcuts import render
 from django.utils import timezone
-from django.urls import reverse
+from django.urls import reverse, reverse_lazy
 from django.core.paginator import Paginator
 
 from django.contrib.auth import get_user_model
@@ -79,6 +80,7 @@ def category_posts(request, category_slug):
         context={"details": f"Не найда категория {category_slug}."}
     )
 
+
 def user_profile(request, username):
     # if not request.user.is_authenticated:
     #     return HttpResponseForbidden(
@@ -116,8 +118,26 @@ def user_profile(request, username):
     }
     return render(request, template, context)
 
+
 # @method_decorator(staff_member_required, name='dispatch')
-class ProfileUpdateView(UpdateView):
+class ProfileUpdateView(LoginRequiredMixin, UpdateView):
     model = get_user_model()
     fields = ['first_name', 'last_name']
     template_name = 'blog/profile_update.html'
+    success_url = reverse_lazy('blog:profile')
+
+    def get_object(self, queryset=None):
+        return self.request.user
+
+class CreatePostView(LoginRequiredMixin, CreateView):
+    model = Post
+    fields = []
+    template_name = ...  # todo
+
+
+def self_profile_view(request):
+    if not request.user.is_authenticated:
+        return HttpResponseForbidden(
+            "Требуется авторизация"
+        )
+    return user_profile(request, request.user.username)

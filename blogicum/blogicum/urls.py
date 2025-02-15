@@ -24,10 +24,12 @@ from django.contrib.auth import views
 from django.contrib.auth.forms import UserCreationForm
 from django.views.generic.edit import CreateView
 
+import django.contrib.auth.urls
+
 import pages.views
 import core.views
 
-urlpatterns = ([
+urlpatterns = (([
     path('', include('blog.urls')),
     path('pages/', include('pages.urls')),
     path('admin/', admin.site.urls),
@@ -38,6 +40,7 @@ urlpatterns = ([
     path('logout/', views.LogoutView.as_view(), name='logout'),
 
     # Изменение пароля.
+    path('auth/password_change/', views.PasswordChangeView.as_view(), name='auth_password_change'),
     path('password_change/', views.PasswordChangeView.as_view(), name='password_change'),
     # Сообщение об успешном изменении пароля.
     path('password_change/done/', views.PasswordChangeDoneView.as_view(), name='password_change_done'),
@@ -61,9 +64,11 @@ urlpatterns = ([
          name='registration',
     ),
 
-    path("debug/raise_500", core.views.raise_500_error, name="dbg_raise_500"),
+    # path("debug/raise_500", core.views.raise_500_error, name="dbg_raise_500"),
 
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT))
+] +
+               static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)) +
+               django.contrib.auth.urls.urlpatterns)
 # )
 
 
