@@ -106,9 +106,41 @@ class Post(models.Model):
     )
     # , blank=False, null=False
 
+    image = models.ImageField(
+        "Картинка",
+        upload_to=".media",
+
+        blank=True,
+        null=True,
+    )
+
     def __str__(self):
         return f"{self.title} : {self.text[:32]} by {self.author}"
 
     class Meta:
         verbose_name = 'публикация'
         verbose_name_plural = 'Публикации'
+
+class Comment(models.Model):
+    text = models.TextField(
+        "Комментарий",
+        blank=False,
+        null=False,
+
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    author = models.ForeignKey(
+        get_user_model(),
+        verbose_name="Автор",
+        on_delete=models.CASCADE
+    )
+    post = models.ForeignKey(
+        Post,
+        on_delete=models.CASCADE,
+        verbose_name="Публикация"
+    )
+
+    class Meta:
+        ordering = ('created_at',)
+        verbose_name = 'комментарий'
+        verbose_name_plural = 'Комментарии'
