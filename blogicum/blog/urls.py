@@ -13,11 +13,11 @@ urlpatterns = [
          ),
 
     path('accounts/profile/', views.self_profile_view, name="my_profile"),
-    path('rofile/', views.self_profile_view, name="profile"),
+    path('profile/', views.self_profile_view, name="profile"),
     path('profile/<slug:username>/', views.user_profile, name='profile'),
     path('posts/create/', views.update_post, name='create_post'),
     path('posts/<int:pk>/edit/', views.update_post, name='edit_post'),
-    path('posts/<int:pk>/delete/', views.update_post, name='delete_post'), # todo views.delete_post
+    path('posts/<int:pk>/delete/', views.delete_post, name='delete_post'),
     path(
         'profile_edit/',
         lambda req: views.ProfileUpdateView.as_view()(req, req.user.id)

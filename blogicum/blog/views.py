@@ -200,7 +200,10 @@ def update_post(request, pk=None):
         return HttpResponseForbidden()
 
     if request.method == "GET":
-        form = PostForm()
+        instance = None
+        if pk:
+            instance = Post.objects.get(pk=pk)
+        form = PostForm(instance=instance)
         context = {'form': form}
         template = 'blog/create.html'
     else:
@@ -220,4 +223,15 @@ def update_post(request, pk=None):
         return redirect("blog:post_detail", post.id)
     return render(request, template, context)
 
-
+def delete_post(request, pk):
+    if not request.user.is_authenticated:
+        return HttpResponseForbidden()
+    post = Post.objects.get(pk=pk)
+    if post.author != request.user:
+        return HttpResponseForbidden()
+    if request.method == "POST":
+        post.delete()
+        return redirect("blog:profile")
+    else:
+        form = PostForm(instance=post)
+        return render(request, "blog/create.html", context={"post": post, "form": form})
