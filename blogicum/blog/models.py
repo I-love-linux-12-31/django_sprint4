@@ -128,6 +128,7 @@ class Post(models.Model):
         verbose_name = 'публикация'
         verbose_name_plural = 'Публикации'
 
+
 class Comment(models.Model):
     text = models.TextField(
         "Комментарий",

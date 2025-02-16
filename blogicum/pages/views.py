@@ -1,4 +1,3 @@
-from django.shortcuts import render
 # from django.views import View
 from django.views.generic import TemplateView
 
@@ -11,19 +10,24 @@ from django.views.generic import TemplateView
 #     template = 'pages/about.html'
 #     return render(request, template)
 
+
 class RulesView(TemplateView):
     template_name = 'pages/rules.html'
 
+
 class AboutView(TemplateView):
     template_name = 'pages/about.html'
+
 
 class CSRFErrorView(TemplateView):
     template_name = 'pages/403csrf.html'
     status_code = 403
 
+
 class NotFoundView(TemplateView):
     template_name = 'pages/404.html'
     status_code = 404
+
 
 class InternalServerErrorView(TemplateView):
     template_name = 'pages/500.html'
@@ -33,6 +37,7 @@ class InternalServerErrorView(TemplateView):
         response = super().render_to_response(context, **response_kwargs)
         response.status_code = self.status_code
         return response
+
 
 def handler500(request, *args, **kwargs):
     # Костыль для кривого теста.

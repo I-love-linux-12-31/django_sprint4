@@ -40,40 +40,69 @@ urlpatterns = (([
     path('logout/', views.LogoutView.as_view(), name='logout'),
 
     # Изменение пароля.
-    path('auth/password_change/', views.PasswordChangeView.as_view(), name='auth_password_change'),
-    path('password_change/', views.PasswordChangeView.as_view(), name='password_change'),
+    path(
+        'auth/password_change/',
+        views.PasswordChangeView.as_view(),
+        name='auth_password_change'
+    ),
+    path(
+        'password_change/',
+        views.PasswordChangeView.as_view(),
+        name='password_change'
+    ),
     # Сообщение об успешном изменении пароля.
-    path('password_change/done/', views.PasswordChangeDoneView.as_view(), name='password_change_done'),
+    path(
+        'password_change/done/',
+        views.PasswordChangeDoneView.as_view(),
+        name='password_change_done'
+    ),
 
     # Восстановление пароля.
-    path('password_reset/', views.PasswordResetView.as_view(), name='password_reset'),
-    # Сообщение об отправке ссылки для восстановления пароля.
-    path('password_reset/done/', views.PasswordResetDoneView.as_view(), name='password_reset_done'),
-    # Вход по ссылке для восстановления пароля.
-    path('reset/<uidb64>/<token>/', views.PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
-    # Сообщение об успешном восстановлении пароля.
-    path('reset/done/', views.PasswordResetCompleteView.as_view(), name='password_reset_complete'),
-
     path(
-         'auth/registration/',
+        'password_reset/',
+        views.PasswordResetView.as_view(),
+        name='password_reset'
+    ),
+    # Сообщение об отправке ссылки для восстановления пароля.
+    path(
+        'password_reset/done/',
+        views.PasswordResetDoneView.as_view(),
+        name='password_reset_done'
+    ),
+    # Вход по ссылке для восстановления пароля.
+    path(
+        'reset/<uidb64>/<token>/',
+        views.PasswordResetConfirmView.as_view(),
+        name='password_reset_confirm'
+    ),
+    # Сообщение об успешном восстановлении пароля.
+    path(
+        'reset/done/',
+        views.PasswordResetCompleteView.as_view(),
+        name='password_reset_complete'
+    ),
+
+    path('auth/registration/',
          CreateView.as_view(
              template_name='registration/registration_form.html',
              form_class=UserCreationForm,
              success_url=reverse_lazy('homepage'),
          ),
-         name='registration',
+         name='registration',),
+
+    path(
+        "debug/raise_500",
+        core.views.raise_500_error,
+        name="dbg_raise_500"
     ),
 
-    path("debug/raise_500", core.views.raise_500_error, name="dbg_raise_500"),
-
-] +
-               static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)) +
-               django.contrib.auth.urls.urlpatterns)
+] + static(
+    settings.MEDIA_URL, document_root=settings.MEDIA_ROOT
+) + django.contrib.auth.urls.urlpatterns)
+)
 # )
-
-
 
 handler404 = pages.views.NotFoundView.as_view()
 handler500 = "pages.views.handler500"
-#pages.views.InternalServerErrorView.as_view()
-#lambda req: pages.views.InternalServerErrorView.as_view()(req, {})
+# pages.views.InternalServerErrorView.as_view()
+# lambda req: pages.views.InternalServerErrorView.as_view()(req, {})
