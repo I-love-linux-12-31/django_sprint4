@@ -43,18 +43,18 @@ def index(request):
     return render(request, template, context)
 
 
-def post_detail(request, id):
+def post_detail(request, post_id):
     template = 'blog/detail.html'
     try:
         post = Post.objects.get(
-            pk=id,
+            pk=post_id,
             # is_published=True,
             # pub_date__lte=timezone.now(),
             # category__is_published=True
         )
         if post.author != request.user:
             post = Post.objects.get(
-                pk=id,
+                pk=post_id,
                 is_published=True,
                 pub_date__lte=timezone.now(),
                 category__is_published=True
@@ -73,7 +73,7 @@ def post_detail(request, id):
         # raise e
         pass
     return render(request, "errors/404.html",
-                  status=404, context={"details": f"Не найден пост {id}."})
+                  status=404, context={"details": f"Не найден пост {post_id}."})
 
 
 def category_posts(request, category_slug):
@@ -204,12 +204,21 @@ def add_comment(request, post_id):
 
 def update_post(request, pk=None):
     if not request.user.is_authenticated:
-        return HttpResponseForbidden()
+        # return HttpResponseForbidden()
+        if pk:
+            return redirect('blog:post_detail', pk)
+        else:
+            return redirect('blog:index')
 
     if request.method == "GET":
         instance = None
         if pk:
-            instance = Post.objects.get(pk=pk)
+            try:
+                instance = Post.objects.get(pk=pk)
+            except Post.DoesNotExist:
+                return HttpResponseNotFound()
+            if instance.author != request.user:
+                return redirect('blog:post_detail', pk)
         form = PostForm(instance=instance)
         context = {'form': form}
         template = 'blog/create.html'
@@ -222,21 +231,44 @@ def update_post(request, pk=None):
             # post.author = request.user
             if pk is not None:
                 post.id = pk
+
+            origin = None
+            if pk:
+                try:
+                    origin = Post.objects.get(pk=pk)
+                except Post.DoesNotExist:
+                    return HttpResponseNotFound()
+
+
             post.author = request.user
             if not post.created_at:
                 post.created_at = timezone.now()
+            if not post.image:
+                post.image = "/static/img/logo.png"
+            if post.author != request.user or (origin and origin.author != request.user):
+                # return HttpResponseForbidden()
+                return redirect('blog:post_detail', pk)
             post.save()
+            if not pk:
+                return redirect("blog:profile", request.user.username)
+            else:
+                return redirect('blog:post_detail', pk)
         else:
-            return HttpResponseBadRequest(form.errors)
+            # return HttpResponseBadRequest(form.errors)
+            return redirect('blog:post_detail', pk)
         # return HttpResponse(status=200)
         # return redirect("blog:post_detail", post.id)
-        return redirect("blog:profile", post.id)
+        # return redirect("blog:profile", request.user.username)
+        return redirect('blog:post_detail', post.id)
     return render(request, template, context)
 
 def delete_post(request, pk):
     if not request.user.is_authenticated:
         return HttpResponseForbidden()
-    post = Post.objects.get(pk=pk)
+    try:
+        post = Post.objects.get(pk=pk)
+    except Post.DoesNotExist:
+        return HttpResponseNotFound() # redirect('pages:404')
     if post.author != request.user:
         return HttpResponseForbidden()
     if request.method == "POST":
