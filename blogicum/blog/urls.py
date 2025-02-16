@@ -15,7 +15,9 @@ urlpatterns = [
     path('accounts/profile/', views.self_profile_view, name="my_profile"),
     path('rofile/', views.self_profile_view, name="profile"),
     path('profile/<slug:username>/', views.user_profile, name='profile'),
-    path('posts/create/', views.index, name='create_post'), # views.create_post # todo: implement view function
+    path('posts/create/', views.update_post, name='create_post'),
+    path('posts/<int:pk>/edit/', views.update_post, name='edit_post'),
+    path('posts/<int:pk>/delete/', views.update_post, name='delete_post'), # todo views.delete_post
     path(
         'profile_edit/',
         lambda req: views.ProfileUpdateView.as_view()(req, req.user.id)
@@ -23,5 +25,9 @@ urlpatterns = [
         else views.self_profile_view(req),
         name='edit_profile'
     ),
+
+    path('posts/<int:post_id>/edit_comment/<int:comment_id>/', views.index, name='edit_comment'), # todo views.edit_comment
+    path('posts/<int:post_id>/comment', views.add_comment, name='add_comment'),
+    path('posts/<int:post_id>/delete_comment/<int:comment_id>/', views.index, name='delete_comment'), # todo views.delete_comment
 
 ]
