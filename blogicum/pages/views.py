@@ -29,3 +29,20 @@ class InternalServerErrorView(TemplateView):
     template_name = 'pages/500.html'
     status_code = 500
 
+    def render_to_response(self, context, **response_kwargs):
+        response = super().render_to_response(context, **response_kwargs)
+        response.status_code = self.status_code
+        return response
+
+def handler500(request, *args, **kwargs):
+    # Костыль для кривого теста.
+    # _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+    #
+    # handler_path = <function InternalServerErrorView at 0x7fe8d6684c20>
+    #
+    #     def check_handler_exists(handler_path):
+    # >       module_name, func_name = handler_path.rsplit('.', 1)
+    # E       AttributeError: 'function' object has no attribute 'rsplit'
+    #
+    # tests/test_err_pages.py:76: AttributeError
+    return InternalServerErrorView.as_view()(request, *args, **kwargs)
