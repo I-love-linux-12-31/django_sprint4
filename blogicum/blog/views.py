@@ -46,12 +46,21 @@ def index(request):
 def post_detail(request, id):
     template = 'blog/detail.html'
     try:
-        if post := Post.objects.get(
+        post = Post.objects.get(
+            pk=id,
+            # is_published=True,
+            # pub_date__lte=timezone.now(),
+            # category__is_published=True
+        )
+        if post.author != request.user:
+            post = Post.objects.get(
                 pk=id,
                 is_published=True,
                 pub_date__lte=timezone.now(),
                 category__is_published=True
-        ):
+            )
+
+        if post:
             comments = Comment.objects.filter(post=post).order_by('created_at')
             context = {
                 'post': post,
@@ -164,11 +173,6 @@ class ProfileUpdateView(LoginRequiredMixin, UpdateView):
     def get_object(self, queryset=None):
         return self.request.user
 
-class CreatePostView(LoginRequiredMixin, CreateView):
-    model = Post
-    fields = []
-    template_name = ...  # todo
-
 
 def self_profile_view(request):
     if not request.user.is_authenticated:
@@ -185,7 +189,10 @@ def add_comment(request, post_id):
         if form.is_valid():
             comment = form.save(commit=False)
             comment.author = request.user
-            comment.post = Post.objects.get(pk=post_id)
+            try:
+                comment.post = Post.objects.get(pk=post_id)
+            except Post.DoesNotExist:
+                return HttpResponseNotFound()
             comment.save()
             # print(comment)
             return redirect('blog:post_detail', post_id)
@@ -216,11 +223,14 @@ def update_post(request, pk=None):
             if pk is not None:
                 post.id = pk
             post.author = request.user
+            if not post.created_at:
+                post.created_at = timezone.now()
             post.save()
         else:
             return HttpResponseBadRequest(form.errors)
         # return HttpResponse(status=200)
-        return redirect("blog:post_detail", post.id)
+        # return redirect("blog:post_detail", post.id)
+        return redirect("blog:profile", post.id)
     return render(request, template, context)
 
 def delete_post(request, pk):
@@ -235,3 +245,39 @@ def delete_post(request, pk):
     else:
         form = PostForm(instance=post)
         return render(request, "blog/create.html", context={"post": post, "form": form})
+
+def delete_comment(request, post_id, comment_id):
+    if not request.user.is_authenticated:
+        return HttpResponseForbidden()
+    try:
+        comment = Comment.objects.get(pk=comment_id, post_id=post_id)
+    except Comment.DoesNotExist:
+        return HttpResponseNotFound()
+
+    if request.user != comment.author:
+        return HttpResponseForbidden()
+
+    if request.method == "POST":
+        comment.delete()
+        return redirect("blog:post_detail", post_id)
+    else:
+        return render(request, "blog/comment.html", context={"comment": comment})
+
+def edit_comment(request, post_id, comment_id):
+    if not request.user.is_authenticated:
+        return HttpResponseForbidden()
+    try:
+        comment = Comment.objects.get(pk=comment_id, post_id=post_id)
+    except Comment.DoesNotExist:
+        return HttpResponseNotFound()
+    if request.user != comment.author:
+        return HttpResponseForbidden()
+
+    if request.method == "POST":
+        form = CommentForm(request.POST, instance=comment)
+        if form.is_valid():
+            form.save()
+        return redirect("blog:post_detail", post_id)
+    else:
+        form = CommentForm(instance=comment)
+        return render(request, "blog/comment.html", context={"comment": comment, "form": form})
