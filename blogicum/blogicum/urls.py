@@ -64,7 +64,7 @@ urlpatterns = (([
          name='registration',
     ),
 
-    # path("debug/raise_500", core.views.raise_500_error, name="dbg_raise_500"),
+    path("debug/raise_500", core.views.raise_500_error, name="dbg_raise_500"),
 
 ] +
                static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)) +
@@ -74,4 +74,6 @@ urlpatterns = (([
 
 
 handler404 = pages.views.NotFoundView.as_view()
-handler500 = lambda req: pages.views.InternalServerErrorView.as_view()(req, {})
+handler500 = "pages.views.handler500"
+#pages.views.InternalServerErrorView.as_view()
+#lambda req: pages.views.InternalServerErrorView.as_view()(req, {})
