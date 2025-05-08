@@ -114,12 +114,20 @@ class Post(models.Model):
         null=True,
     )
 
+    def get_comment_count(self):
+        return self.comment_set.count()
+
+    @property
+    def comment_count(self):
+        return self.get_comment_count()
+
     def __str__(self):
         return f"{self.title} : {self.text[:32]} by {self.author}"
 
     class Meta:
         verbose_name = 'публикация'
         verbose_name_plural = 'Публикации'
+
 
 class Comment(models.Model):
     text = models.TextField(
